@@ -16,7 +16,7 @@ fn update_frame(image: &mut RgbImage, data: Vec<u8>, shift: usize) {
                 triple
             }
         })
-        .map(|triple| Rgb(triple))
+        .map(Rgb)
         .enumerate()
         .for_each(|(i, color)| {
             let i = (i + shift) as i32;
