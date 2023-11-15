@@ -25,7 +25,7 @@ fn update_frame(image: &mut RgbImage, data: Vec<u8>, shift: usize) {
         });
 }
 
-pub fn encode_to_rgb(mut file: &mut impl Read, file_size: usize) -> RgbImage {
+pub fn to_rgb(mut file: &mut impl Read, file_size: usize) -> RgbImage {
     let height = (file_size / BUFFER_SIZE) + 1;
     let mut image = RgbImage::new(IMAGE_WIDTH as u32, height as u32);
 
