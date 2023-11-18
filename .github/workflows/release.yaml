@@ -1,0 +1,135 @@
+name: Release
+
+on:
+  # Trigger the workflow on the new 'v*' tag created
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    outputs:
+      hash-linux: ${{ steps.hash.outputs.hash }}
+      hash-macos: ${{ steps.hash-mac.outputs.hash }}
+      hash-windows: ${{ steps.hash-win.outputs.hash }}
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "os_name=linux" >> $GITHUB_ENV
+
+      - if: matrix.os == 'macOS-latest'
+        run: |
+          echo "os_name=darwin" >> $GITHUB_ENV
+
+      - if: matrix.os == 'windows-latest'
+        run: |
+          echo "os_name=windows" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "EXT=.exe" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Build binary
+        run: cargo build --release
+
+      - name: Set binary path name
+        if: matrix.os != 'windows-latest'
+        run: echo "BINARY_PATH=./target/release/fig" >> $GITHUB_ENV
+
+      - name: Set binary path name
+        if: matrix.os == 'windows-latest'
+        run: echo "BINARY_PATH=./target/release/fig.exe" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Compress binary
+        uses: svenstaro/upx-action@2.3.0
+        with:
+          files: ${{ env.BINARY_PATH }}
+
+      - name: Check binary
+        run: |
+          ${{ env.BINARY_PATH }} --version
+
+      - name: Generate hashes
+        if: matrix.os == 'ubuntu-latest'
+        id: hash
+        run: |
+          # sha256sum generates sha256 hash for all artifacts.
+          # base64 -w0 encodes to base64 and outputs on a single line.
+          # sha256sum artifact1 artifact2 ... | base64 -w0
+          echo "hash=$(sha256sum ${{ env.BINARY_PATH }} | base64 -w0)" >> $GITHUB_OUTPUT
+
+      - name: Generate hashes
+        if: matrix.os == 'macOS-latest'
+        id: hash-mac
+        run: |
+          # sha256sum generates sha256 hash for all artifacts.
+          # base64 -w0 encodes to base64 and outputs on a single line.
+          # sha256sum artifact1 artifact2 ... | base64 -w0
+          echo "hash=$(shasum -a 256 ${{ env.BINARY_PATH }} | base64)" >> $GITHUB_OUTPUT
+
+      - name: Generate hashes
+        if: matrix.os == 'windows-latest'
+        id: hash-win
+        run: |
+          # sha256sum generates sha256 hash for all artifacts.
+          # base64 -w0 encodes to base64 and outputs on a single line.
+          # sha256sum artifact1 artifact2 ... | base64 -w0
+          echo "hash=$(sha256sum ${{ env.BINARY_PATH }} | base64 -w0)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: fig-amd64-${{ env.os_name }}${{ env.EXT }}
+          path: ${{ env.BINARY_PATH }}
+          if-no-files-found: error
+          retention-days: 5
+
+  provenance:
+    needs: [build]
+    strategy:
+      matrix:
+        hash: [hash-linux, hash-macos, hash-windows]
+    permissions:
+      actions: read # To read the workflow path.
+      id-token: write # To sign the provenance.
+      contents: write # To add assets to a release.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.9.0
+    with:
+      base64-subjects: "${{ needs.build.outputs[matrix.hash] }}"
+      upload-assets: ${{ startsWith(github.ref, 'refs/tags/') }} # Optional: Upload to a new release
+      continue-on-error: true
+
+  release:
+    needs: [build, provenance]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download linux binary
+        uses: actions/download-artifact@v3.0.2
+        with:
+          name: fig-amd64-linux
+
+      - name: Download macOS binary
+        uses: actions/download-artifact@v3.0.2
+        with:
+          name: fig-amd64-darwin
+
+      - name: Download windows binary
+        uses: actions/download-artifact@v3.0.2
+        with:
+          name: fig-amd64-windows.exe
+
+      - name: Upload assets
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          files: |
+            fig-amd64-linux
+            fig-amd64-darwin
+            fig-amd64-windows.exe
