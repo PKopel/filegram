@@ -4,8 +4,8 @@ use image::{ImageFormat, RgbImage};
 
 use crate::padding::unpad_block;
 
-pub fn from_file<R: BufRead + Seek>(file: R, format: ImageFormat) -> Vec<u8> {
-    let img = image::load(file, format).unwrap();
+pub fn from_file<R: BufRead + Seek>(input: R, format: ImageFormat) -> Vec<u8> {
+    let img = image::load(input, format).unwrap();
     from_rgb(img.as_rgb8().unwrap())
 }
 

@@ -1,5 +1,6 @@
 pub mod decode;
 pub mod encode;
+pub mod encryption;
 mod padding;
 mod utils;
 

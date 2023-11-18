@@ -25,14 +25,14 @@ fn update_frame(image: &mut RgbImage, data: Vec<u8>, shift: usize) {
         });
 }
 
-pub fn to_rgb(mut file: &mut impl Read, file_size: usize) -> RgbImage {
+pub fn from_reader(mut input: &mut impl Read, file_size: usize) -> RgbImage {
     let height = (file_size / BUFFER_SIZE) + 1;
     let mut image = RgbImage::new(IMAGE_WIDTH as u32, height as u32);
 
     let mut bytes = [0u8; BUFFER_SIZE];
     let mut shift = 0;
 
-    while let Ok(n) = read_exact(&mut file, &mut bytes) {
+    while let Ok(n) = read_exact(&mut input, &mut bytes) {
         if n == 0 {
             break;
         };
@@ -44,5 +44,24 @@ pub fn to_rgb(mut file: &mut impl Read, file_size: usize) -> RgbImage {
         update_frame(&mut image, block, shift);
         shift += IMAGE_WIDTH;
     }
+    image
+}
+
+pub fn from_vec(input: Vec<u8>) -> RgbImage {
+    let height = (input.len() / BUFFER_SIZE) + 1;
+    let mut image = RgbImage::new(IMAGE_WIDTH as u32, height as u32);
+
+    let mut shift = 0;
+
+    input.chunks(BUFFER_SIZE).for_each(|bytes| {
+        let n = bytes.len();
+        let block = if n < BUFFER_SIZE {
+            pad_block(bytes[..n].to_vec())
+        } else {
+            bytes.to_vec()
+        };
+        update_frame(&mut image, block, shift);
+        shift += IMAGE_WIDTH;
+    });
     image
 }

@@ -1,3 +1,6 @@
 /target
 .ignore
 fig
+**/*.png
+**/*.blb
+**/*.key

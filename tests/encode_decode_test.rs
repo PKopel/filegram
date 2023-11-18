@@ -17,7 +17,7 @@ fn encode_decode_test() {
     let file = File::open(file_path).unwrap();
     let file_size = file.metadata().unwrap().len() as usize;
     let mut file = BufReader::new(file);
-    let rgb = encode::to_rgb(&mut file, file_size);
+    let rgb = encode::from_reader(&mut file, file_size);
     let data = decode::from_rgb(&rgb);
 
     assert_eq!(original_data, data)
