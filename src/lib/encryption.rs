@@ -19,6 +19,12 @@ struct Key {
     nonce: Vec<u8>,
 }
 
+impl Default for Cipher {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Cipher {
     pub fn new() -> Self {
         let key = ChaCha20Poly1305::generate_key(&mut OsRng);
