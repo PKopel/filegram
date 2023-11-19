@@ -60,7 +60,7 @@ impl CommandTrait for Encode {
             let mut data = Vec::new();
             file.read_to_end(&mut data)?;
             let data = cipher.encrypt(&data);
-            encode::from_vec(data)
+            encode::from_slice(&data)
         } else {
             encode::from_reader(&mut file, file_size)
         };

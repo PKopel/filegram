@@ -2,7 +2,7 @@
 name = "filegram-web"
 version = "0.1.0"
 authors = ["Paweł Kopel <pawel.kopel2@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -19,6 +19,7 @@ filegram = { path = "../filegram" }
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.7", optional = true }
+getrandom = { version = "0.2.11", features = ["js"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
