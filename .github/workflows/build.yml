@@ -28,4 +28,4 @@ jobs:
 
       - name: Run wasm tests
         run: |
-          cd filegram-web && wasm-pack test --firefox --headless
+          cd filegram-web && wasm-pack test --node
