@@ -36,16 +36,18 @@ jobs:
           echo "os_name=windows" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "EXT=.exe" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Build binary
-        run: cargo build --release
-
       - name: Set binary path name
         if: matrix.os != 'windows-latest'
-        run: echo "BINARY_PATH=./target/release/fig" >> $GITHUB_ENV
+        run: echo "BINARY_PATH=./target/release/fig-amd64-${{ env.os_name }}" >> $GITHUB_ENV
 
       - name: Set binary path name
         if: matrix.os == 'windows-latest'
-        run: echo "BINARY_PATH=./target/release/fig.exe" | Out-File -FilePath $env:GITHUB_ENV -Append
+        run: echo "BINARY_PATH=./target/release/fig-amd64-windows.exe" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Build binary
+        run: |
+          cargo build --release
+          mv ./target/release/fig${{ env.EXT }} ${{ env.BINARY_PATH }}
 
       - name: Compress binary
         uses: svenstaro/upx-action@2.3.0
