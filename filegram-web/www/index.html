@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Hello wasm-pack!</title>
+  <style>
+    #drop_zone {
+      border: 5px solid blue;
+      width: 200px;
+      height: 100px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+    <p>Drag one or more files to this <i>drop zone</i>.</p>
+  </div>
+
+  <script src="./bootstrap.js"></script>
+</body>
+
+</html>

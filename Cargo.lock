@@ -386,6 +386,8 @@ dependencies = [
  "console_error_panic_hook",
  "filegram",
  "getrandom 0.2.11",
+ "image",
+ "js-sys",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]

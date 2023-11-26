@@ -20,6 +20,8 @@ filegram = { path = "../filegram" }
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.7", optional = true }
 getrandom = { version = "0.2.11", features = ["js"] }
+js-sys = "0.3.65"
+image = "0.24.7"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"

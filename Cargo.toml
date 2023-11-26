@@ -1,2 +1,3 @@
 [workspace]
 members = ["filegram", "filegram-cli", "filegram-web"]
+resolver = "2"
