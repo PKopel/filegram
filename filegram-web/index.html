@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Filegram</title>
+
+    <link data-trunk rel="rust" data-type="worker" data-wasm-opt="z" data-bin="filegram_worker" data-weak-refs
+        data-loader-shim />
+    <link data-trunk rel="rust" data-wasm-opt="z" data-bin="filegram_app" />
+</head>
+
+<body>
+    <div id="root"></div>
+</body>
+
+</html>
