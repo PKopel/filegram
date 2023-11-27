@@ -10,19 +10,17 @@ filegram = { path = "../filegram" }
 getrandom = { version = "0.2.11", features = ["js"] }
 js-sys = "0.3.65"
 image = "0.24.7"
-serde = "1.0.163"
 web-sys = { version = "0.3.63", features = [
     "File",
     "Blob",
     "Url",
     "ReadableStream",
 ] }
-wasm-bindgen-futures = { version = "0.4" }
-wasm-streams = "0.3.0"
 wasm-bindgen = "0.2.86"
-futures = "0.3.28"
 yew = { version = "0.20.0", features = ["csr"] }
-serde-wasm-bindgen = "0.6.0"
 gloo = "0.10.0"
 gloo-file = "0.3.0"
 base64 = "0.21.5"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.34"
