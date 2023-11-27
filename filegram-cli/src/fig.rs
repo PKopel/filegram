@@ -5,8 +5,10 @@ use std::{
 };
 
 use clap::{Args, Parser, Subcommand};
-use filegram::{decode, encode, encryption::Cipher};
-use image::ImageFormat;
+use filegram::{
+    decode, encode,
+    encryption::{Cipher, Key},
+};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -54,10 +56,11 @@ impl CommandTrait for Encode {
         let mut file = BufReader::new(file);
         let rgb = if self.encrypted {
             let cipher = Cipher::new();
+            save_cipher_key(cipher.get_key_struct())?;
             let mut data = Vec::new();
             file.read_to_end(&mut data)?;
             let data = cipher.encrypt(&data);
-            encode::from_vec(data)
+            encode::from_slice(&data)
         } else {
             encode::from_reader(&mut file, file_size)
         };
@@ -91,10 +94,11 @@ impl CommandTrait for Decode {
     fn execute(&self) -> Result<(), Error> {
         let output = self.output.clone().unwrap_or_else(|| self.default_output());
         let file = File::open(self.file.clone())?;
-        let data = decode::from_file(BufReader::new(file), ImageFormat::Png);
+        let data = decode::from_file(BufReader::new(file));
         let data = if let Some(Some(path)) = &self.encrypted {
             let key_file = File::open(path)?;
-            let cipher = Cipher::load(key_file);
+            let key = load_cipher_key(key_file)?;
+            let cipher = Cipher::load(key);
             cipher.decrypt(&data)
         } else {
             data
@@ -109,6 +113,17 @@ impl CommandTrait for Decode {
             None => self.file.clone() + ".decoded",
         }
     }
+}
+
+fn save_cipher_key(key: Key) -> Result<(), Error> {
+    let key_file = File::create("filegram.key")?;
+    serde_json::to_writer(key_file, &key)?;
+    Ok(())
+}
+
+fn load_cipher_key(file: File) -> Result<Key, Error> {
+    let key: Key = serde_json::from_reader(file)?;
+    Ok(key)
 }
 
 fn main() -> Result<(), Error> {

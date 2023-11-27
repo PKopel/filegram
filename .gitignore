@@ -1,6 +1,8 @@
 /target
 .ignore
+.vscode
 fig
 **/*.png
 **/*.blb
 **/*.key
+**/dist

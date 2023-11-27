@@ -1,0 +1,18 @@
+[package]
+name = "filegram"
+version = "0.2.0"
+authors = ["Paweł Kopel <pawel.kopel2@gmail.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+block-padding = "0.3.3"
+chacha20poly1305 = { version = "0.10.1", features = ["heapless"] }
+image = "0.24.7"
+imageproc = "0.23.0"
+serde = { version = "1.0.192", features = ["derive"] }
+
+[lib]
+name = "filegram"
+path = "src/lib.rs"

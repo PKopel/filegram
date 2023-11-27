@@ -47,7 +47,7 @@ pub fn from_reader(mut input: &mut impl Read, file_size: usize) -> RgbImage {
     image
 }
 
-pub fn from_vec(input: Vec<u8>) -> RgbImage {
+pub fn from_slice(input: &[u8]) -> RgbImage {
     let height = (input.len() / BUFFER_SIZE) + 1;
     let mut image = RgbImage::new(IMAGE_WIDTH as u32, height as u32);
 

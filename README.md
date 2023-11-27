@@ -8,8 +8,8 @@ Store files as images.
 
 Filegram is inspired by the ["Using YouTube as Unlimited Cloud Storage??"](https://youtu.be/_w6PCHutmb4?si=TzC_hnr62YA0f8Go) video. Filegram binary allows you to encode your files as PNG images that can be stored on free image-sharing platforms. Additionally, filegram supports encrypting the file contents with ChaCha cipher.
 
-## Usage
+## Packages
 
-- `fig encode`: convert file to PNG
-- `fig decode`: decode PNG file to original format
-- `fig help`: help
+- [`filegram`](./filegram/): library for encodeing and decodeing files
+- [`filegram-cli`](./filegram-cli/): command line interface for filegram
+- [`filegram-web`](./filegram-web/): web tool build with webassembly
