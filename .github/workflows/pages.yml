@@ -41,7 +41,7 @@ jobs:
         run: rustup target add wasm32-unknown-unknown
 
       - name: Build dist
-        run: cd filegram-web && ../trunk build
+        run: cd filegram-web && ../trunk build --release --public-url filegram
 
       - name: Setup Pages
         uses: actions/configure-pages@v2
