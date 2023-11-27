@@ -7,15 +7,9 @@ edition = "2021"
 [dependencies]
 filegram = { path = "../filegram" }
 
-# The `console_error_panic_hook` crate provides better debugging of panics by
-# logging them with `console.error`. This is great for development, but requires
-# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
-# code size when deploying.
-console_error_panic_hook = "0.1.7"
 getrandom = { version = "0.2.11", features = ["js"] }
 js-sys = "0.3.65"
 image = "0.24.7"
-gloo-worker = "0.5.0"
 serde = "1.0.163"
 web-sys = { version = "0.3.63", features = [
     "File",
@@ -29,4 +23,6 @@ wasm-bindgen = "0.2.86"
 futures = "0.3.28"
 yew = { version = "0.20.0", features = ["csr"] }
 serde-wasm-bindgen = "0.6.0"
-base64 = "0.13.0"
+gloo = "0.10.0"
+gloo-file = "0.3.0"
+base64 = "0.21.5"
