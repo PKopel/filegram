@@ -37,6 +37,9 @@ jobs:
       - name: Install trunk
         run: wget -qO- https://github.com/thedodd/trunk/releases/download/v0.17.5/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xzf-
 
+      - name: Add wasm target
+        run: rustup target add wasm32-unknown-unknown
+
       - name: Build dist
         run: cd filegram-web && ../trunk build
 
