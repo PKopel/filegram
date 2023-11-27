@@ -1,7 +1,21 @@
+.component {
+    width: 50%;
+}
+
+.encode {
+    float: left;
+}
+
+.decode {
+    float: right;
+}
+
 img {
     padding: 10px;
 }
 
 .img {
     padding: 10px;
+    width: 100px;
+    float: left;
 }
