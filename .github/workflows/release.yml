@@ -49,10 +49,10 @@ jobs:
           cargo build --release
           mv ./target/release/fig${{ env.EXT }} ${{ env.BINARY_PATH }}
 
-      - name: Compress binary
-        uses: svenstaro/upx-action@2.3.0
-        with:
-          files: ${{ env.BINARY_PATH }}
+      # - name: Compress binary
+      #   uses: svenstaro/upx-action@2.3.0
+      #   with:
+      #     files: ${{ env.BINARY_PATH }}
 
       - name: Check binary
         run: |
