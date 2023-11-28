@@ -10,7 +10,10 @@ fn app() -> Html {
     html! {
         <>
         <div>
-            <h1>{"Filegram image app"}</h1>
+            <div>
+                <h1>{"Filegram web app"}</h1>
+                <a href="https://github.com/PKopel/filegram">{"GitHub repository"}</a>
+            </div>
             <EncodeComponent/>
             <DecodeComponent/>
         </div>

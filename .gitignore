@@ -3,6 +3,8 @@
 .vscode
 fig
 **/*.png
+!filegram-web/images/*.png
 **/*.blb
 **/*.key
 **/dist
+Cargo.lock
