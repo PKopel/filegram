@@ -1,6 +1,6 @@
 use filegram::decode;
-use gloo::utils::document;
 use gloo_file::{callbacks::FileReader, Blob, File, ObjectUrl};
+use gloo_utils::document;
 use std::{collections::HashMap, path::Path};
 use wasm_bindgen::JsCast;
 use web_sys::{Event, HtmlElement, HtmlInputElement};

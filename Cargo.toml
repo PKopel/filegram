@@ -1,3 +1,8 @@
 [workspace]
 members = ["filegram", "filegram-cli", "filegram-web"]
 resolver = "2"
+
+[profile.release]
+strip = true
+lto = true
+panic = "abort"

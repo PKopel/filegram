@@ -1,8 +1,8 @@
 use base64::{engine::general_purpose, Engine as _};
 use filegram::encode;
-use gloo::utils::document;
 use gloo_file::{callbacks::FileReader, File};
 use gloo_file::{Blob, ObjectUrl};
+use gloo_utils::document;
 use std::collections::HashMap;
 use std::io::{Read, Seek, SeekFrom};
 use wasm_bindgen::JsCast;
