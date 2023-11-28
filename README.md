@@ -1,6 +1,7 @@
 # filegram
 
 ![tests](https://github.com/PKopel/filegram/actions/workflows/build.yml/badge.svg)
+![pages](https://github.com/PKopel/filegram/actions/workflows/pages.yml/badge.svg)
 
 Store files as images.
 
@@ -12,4 +13,4 @@ Filegram is inspired by the ["Using YouTube as Unlimited Cloud Storage??"](https
 
 - [`filegram`](./filegram/): library for encodeing and decodeing files
 - [`filegram-cli`](./filegram-cli/): command line interface for filegram
-- [`filegram-web`](./filegram-web/): web tool build with webassembly
+- [`filegram-web`](./filegram-web/): filegram web tool

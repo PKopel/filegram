@@ -8,7 +8,7 @@ edition = "2021"
 filegram = { path = "../filegram" }
 
 getrandom = { version = "0.2.11", features = ["js"] }
-js-sys = "0.3.65"
+js-sys = "0.3.66"
 image = "0.24.7"
 web-sys = { version = "0.3.63", features = [
     "File",
@@ -16,7 +16,7 @@ web-sys = { version = "0.3.63", features = [
     "Url",
     "ReadableStream",
 ] }
-wasm-bindgen = "0.2.86"
+wasm-bindgen = "0.2.89"
 yew = { version = "0.21.0", features = ["csr"] }
 gloo = "0.10.0"
 gloo-file = "0.3.0"
