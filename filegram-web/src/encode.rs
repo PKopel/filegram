@@ -10,7 +10,7 @@ use web_sys::{Event, HtmlElement, HtmlInputElement};
 use yew::prelude::*;
 
 type FileName = String;
-type Data = String;
+type Data = Vec<u8>;
 
 pub enum Msg {
     LoadedBytes(FileName, Vec<u8>),
@@ -85,8 +85,7 @@ impl Component for EncodeComponent {
             }
             Msg::LoadedBytes(file_name, data) => {
                 let image = Self::encode(data);
-                let image_data = general_purpose::STANDARD_NO_PAD.encode(image);
-                self.files.push((file_name.clone(), image_data));
+                self.files.push((file_name.clone(), image));
                 self.readers.remove(&file_name);
                 true
             }
@@ -95,32 +94,37 @@ impl Component for EncodeComponent {
 }
 
 impl EncodeComponent {
-    fn view_file(name: &str, data: &str) -> Html {
-        let img = format!("data:image/png;base64,{}", data.to_string());
-        let (c_name, c_data) = (name.to_owned(), data.to_owned());
+    fn view_file(name: &str, data: &[u8]) -> Html {
+        let image_data = general_purpose::STANDARD_NO_PAD.encode(data);
+        let img = format!("data:image/png;base64,{}", image_data);
+
+        let file_name = name.to_owned() + ".png";
+        let blob = Blob::new_with_options(data, Some("image/png"));
+        let blob_url = ObjectUrl::from(blob);
         let on_click = Callback::from(move |_| {
-            Self::download_file(&c_name, &c_data);
+            Self::download_file(&file_name, &blob_url);
         });
+
         html! {
             <div class="img">
-                <p>{name}</p>
+                <div class="center">
+                    <p>{name}</p>
+                </div>
                 <img src={img}/>
-                <button onclick={on_click}>{"Download"}</button>
+                <div class="center">
+                    <button onclick={on_click}>{"Download"}</button>
+                </div>
             </div>
         }
     }
 
-    fn download_file(name: &str, data: &str) {
-        let file_name = name.to_owned() + ".png";
-        let data = general_purpose::STANDARD_NO_PAD.decode(data).unwrap();
-        let blob = Blob::new_with_options(&data[..], Some("image/png"));
-        let blob_url = ObjectUrl::from(blob);
+    fn download_file(file_name: &str, url: &ObjectUrl) {
         let download_element = document().create_element("a").unwrap();
         download_element
-            .set_attribute("href", &blob_url.to_string())
+            .set_attribute("href", &url.to_string())
             .unwrap();
         download_element
-            .set_attribute("download", &file_name)
+            .set_attribute("download", file_name)
             .unwrap();
         download_element.dyn_into::<HtmlElement>().unwrap().click();
     }
