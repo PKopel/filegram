@@ -1,6 +1,8 @@
+mod utils;
+
 use std::{
     fs::{self, File},
-    io::{BufReader, Error, ErrorKind, Read},
+    io::{self, BufReader, Error, ErrorKind},
     path::Path,
 };
 
@@ -40,8 +42,8 @@ trait CommandTrait {
 
 #[derive(Args)]
 struct Encode {
-    #[arg(short, long)]
-    file: String,
+    #[arg(short, long, help = "path to input file, default is stdin")]
+    file: Option<String>,
     #[arg(short, long)]
     output: Option<String>,
     #[arg(short, long)]
@@ -51,18 +53,18 @@ struct Encode {
 impl CommandTrait for Encode {
     fn execute(&self) -> Result<(), Error> {
         let output = self.output.clone().unwrap_or_else(|| self.default_output());
-        let file = File::open(self.file.clone())?;
-        let file_size = file.metadata()?.len() as usize;
-        let mut file = BufReader::new(file);
+        let data = if let Some(file) = self.file.clone() {
+            utils::read_to_end(File::open(file.clone())?)
+        } else {
+            utils::read_to_end(io::stdin())
+        }?;
         let rgb = if self.encrypted {
             let cipher = Cipher::new();
             save_cipher_key(cipher.get_key_struct())?;
-            let mut data = Vec::new();
-            file.read_to_end(&mut data)?;
             let data = cipher.encrypt(&data);
             encode::from_slice(&data)
         } else {
-            encode::from_reader(&mut file, file_size)
+            encode::from_slice(&data)
         };
         let path = Path::new(&output);
         rgb.save(path)
@@ -71,7 +73,10 @@ impl CommandTrait for Encode {
     }
 
     fn default_output(&self) -> String {
-        self.file.clone() + ".png"
+        match self.file.clone() {
+            Some(file) => file + ".png",
+            None => "output.png".to_owned(),
+        }
     }
 }
 
