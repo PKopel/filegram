@@ -1,15 +1,23 @@
-use filegram::decode;
+use base64::{engine::general_purpose, Engine};
+use filegram::{
+    decode,
+    encryption::{Cipher, Key},
+};
 use gloo_file::{callbacks::FileReader, Blob, File, ObjectUrl};
 use gloo_utils::document;
-use std::{collections::HashMap, path::Path};
+use std::collections::HashMap;
 use wasm_bindgen::JsCast;
 use web_sys::{Event, HtmlElement, HtmlInputElement};
 use yew::prelude::*;
+
+use crate::utils;
 
 type FileName = String;
 type Data = Vec<u8>;
 
 pub enum Msg {
+    Key(Option<Key>),
+    Decrypt(bool),
     LoadedBytes(FileName, Vec<u8>),
     Files(Vec<File>),
 }
@@ -17,6 +25,8 @@ pub enum Msg {
 pub struct DecodeComponent {
     files: Vec<(FileName, Data)>,
     readers: HashMap<FileName, FileReader>,
+    hide_key_input: bool,
+    key: Option<Key>,
 }
 
 impl Component for DecodeComponent {
@@ -27,6 +37,8 @@ impl Component for DecodeComponent {
         Self {
             files: Vec::new(),
             readers: HashMap::default(),
+            hide_key_input: true,
+            key: None,
         }
     }
 
@@ -45,16 +57,43 @@ impl Component for DecodeComponent {
             Msg::Files(selected_files)
         });
 
+        let on_input = ctx.link().callback(move |e: InputEvent| {
+            let key_ref: HtmlInputElement = e.target_unchecked_into();
+            let key = key_ref.value();
+            let key = general_purpose::STANDARD_NO_PAD.decode(key).unwrap();
+            if let Ok(key) = serde_json::from_slice(&key) {
+                Msg::Key(Some(key))
+            } else {
+                Msg::Key(None)
+            }
+        });
+
+        let on_check = ctx.link().callback(move |e: MouseEvent| {
+            let decrypt_ref: HtmlInputElement = e.target_unchecked_into();
+            let decrypt = decrypt_ref.checked();
+            Msg::Decrypt(decrypt)
+        });
+
         html! {
             <div class="component decode">
                 <div>
                     <h2>{"Choose a file to decode from an image:"}</h2>
                 </div>
                 <div>
-                    <input type="file" accept="image/png" onchange={on_change} multiple=false/>
+                    <label class="container" for="decrypt">{"Decrypt"}
+                        <input type="checkbox" id="decrypt" onclick={on_check}/>
+                        <span class="checkmark"></span>
+                    </label>
+                    <input type="text" placeholder={"Key string"} hidden={self.hide_key_input} oninput={on_input}/>
                 </div>
                 <div>
-                { for self.files.iter().map(|(n,d)| Self::view_file(n,d))}
+                    <label class="custom-file-upload">
+                        {"Select file"}
+                        <input type="file" accept="image/png" onchange={on_change} multiple=false/>
+                    </label>
+                </div>
+                <div>
+                { for self.files.iter().rev().map(|(n,d)| Self::view_file(n,d))}
                 </div>
             </div>
         }
@@ -81,22 +120,28 @@ impl Component for DecodeComponent {
                 true
             }
             Msg::LoadedBytes(file_name, data) => {
-                let file_contents = Self::decode(data);
+                let data = Self::decode(data);
+                let file_contents = if let Some(key) = &self.key {
+                    let cipher = Cipher::load(key);
+                    cipher.decrypt(&data)
+                } else {
+                    data
+                };
                 self.files.push((file_name.clone(), file_contents));
                 self.readers.remove(&file_name);
+                true
+            }
+            Msg::Key(key) => {
+                self.key = key;
+                false
+            }
+            Msg::Decrypt(decrypt) => {
+                self.hide_key_input = !decrypt;
                 true
             }
         }
     }
 }
-
-const DEF_IMG_PATH: &str = "images/emblem-documents.png";
-const ZIP_EXTENSIONS: [&str; 6] = ["zip", "tar", "gz", "xz", "jar", "7z"];
-const ZIP_IMG_PATH: &str = "images/application-x-zip.png";
-const IMG_EXTENSIONS: [&str; 6] = ["png", "jpg", "jpeg", "gif", "svg", "webp"];
-const IMG_IMG_PATH: &str = "images/image-x-generic.png";
-const PDF_EXTENSION: [&str; 1] = ["pdf"];
-const PDF_IMG_PATH: &str = "images/application-pdf.png";
 
 impl DecodeComponent {
     fn view_file(name: &str, data: &[u8]) -> Html {
@@ -107,7 +152,7 @@ impl DecodeComponent {
             name
         };
         let label = file_name.clone();
-        let file_img = get_image_for_file(file_name.clone());
+        let file_img = utils::get_image_for_file(file_name.clone());
         let blob = Blob::new(data);
         let blob_url = ObjectUrl::from(blob);
         let on_click = Callback::from(move |_| {
@@ -116,15 +161,14 @@ impl DecodeComponent {
 
         html! {
             <div class="img">
-                <div class="center">
-                    <p>{label}</p>
-                </div>
-                <div class="center">
-                    <img src={file_img}/>
-                </div>
-                <div class="center">
-                    <button onclick={on_click}>{"Download"}</button>
-                </div>
+                <button onclick={on_click}>
+                    <div class="center">
+                        <p>{label}</p>
+                    </div>
+                    <div class="center">
+                        <img src={file_img}/>
+                    </div>
+                </button>
             </div>
         }
     }
@@ -143,18 +187,5 @@ impl DecodeComponent {
     fn decode(data: Vec<u8>) -> Vec<u8> {
         let cursor = std::io::Cursor::new(data);
         decode::from_file(cursor)
-    }
-}
-
-fn get_image_for_file(file_name: String) -> &'static str {
-    let extension = Path::new(&file_name).extension().unwrap().to_str().unwrap();
-    if ZIP_EXTENSIONS.contains(&extension) {
-        ZIP_IMG_PATH
-    } else if IMG_EXTENSIONS.contains(&extension) {
-        IMG_IMG_PATH
-    } else if PDF_EXTENSION.contains(&extension) {
-        PDF_IMG_PATH
-    } else {
-        DEF_IMG_PATH
     }
 }

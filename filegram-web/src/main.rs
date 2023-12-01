@@ -1,5 +1,6 @@
 mod decode;
 mod encode;
+mod utils;
 
 use decode::DecodeComponent;
 use encode::EncodeComponent;
@@ -9,14 +10,17 @@ use yew::prelude::*;
 fn app() -> Html {
     html! {
         <>
-        <div>
-            <div>
-                <h1>{"Filegram web app"}</h1>
-                <a href="https://github.com/PKopel/filegram">{"GitHub repository"}</a>
-            </div>
+        <header>
+        <h1>{"Filegram web app"}</h1>
+        </header>
+        <div class="main">
             <EncodeComponent/>
             <DecodeComponent/>
         </div>
+        <footer>
+            <p>{"Author: Paweł Kopel"}</p>
+            <p><a href="https://github.com/PKopel/filegram">{"GitHub repository"}</a></p>
+        </footer>
         </>
     }
 }

@@ -103,7 +103,7 @@ impl CommandTrait for Decode {
         let data = if let Some(Some(path)) = &self.encrypted {
             let key_file = File::open(path)?;
             let key = load_cipher_key(key_file)?;
-            let cipher = Cipher::load(key);
+            let cipher = Cipher::load(&key);
             cipher.decrypt(&data)
         } else {
             data
