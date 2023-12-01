@@ -39,7 +39,7 @@ impl Cipher {
         Cipher { cipher, key, nonce }
     }
 
-    pub fn load(key_struct: Key) -> Self {
+    pub fn load(key_struct: &Key) -> Self {
         let key = GenericArray::clone_from_slice(&key_struct.key);
         let cipher = ChaCha20Poly1305::new_from_slice(&key_struct.key).unwrap();
         let nonce = GenericArray::clone_from_slice(&key_struct.nonce);

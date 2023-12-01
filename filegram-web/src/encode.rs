@@ -1,5 +1,6 @@
 use base64::{engine::general_purpose, Engine as _};
 use filegram::encode;
+use filegram::encryption::{Cipher, Key};
 use gloo_file::{callbacks::FileReader, File};
 use gloo_file::{Blob, ObjectUrl};
 use gloo_utils::document;
@@ -13,12 +14,13 @@ type FileName = String;
 type Data = Vec<u8>;
 
 pub enum Msg {
-    LoadedBytes(FileName, Vec<u8>),
-    Files(Vec<File>),
+    LoadedBytes(FileName, Vec<u8>, bool),
+    Files(Vec<File>, bool),
 }
 
 pub struct EncodeComponent {
-    files: Vec<(FileName, Data)>,
+    encrypt_ref: NodeRef,
+    files: Vec<(FileName, Data, Option<Key>)>,
     readers: HashMap<FileName, FileReader>,
 }
 
@@ -28,12 +30,14 @@ impl Component for EncodeComponent {
 
     fn create(_ctx: &Context<Self>) -> Self {
         Self {
+            encrypt_ref: NodeRef::default(),
             files: Vec::new(),
             readers: HashMap::default(),
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
+        let encrypt_ref = self.encrypt_ref.clone();
         let on_change = ctx.link().callback(move |e: Event| {
             let mut selected_files = Vec::new();
             let input: HtmlInputElement = e.target_unchecked_into();
@@ -45,7 +49,8 @@ impl Component for EncodeComponent {
                     .map(File::from);
                 selected_files.extend(files);
             }
-            Msg::Files(selected_files)
+            let encrypt = encrypt_ref.cast::<HtmlInputElement>().unwrap().checked();
+            Msg::Files(selected_files, encrypt)
         });
 
         html! {
@@ -54,10 +59,20 @@ impl Component for EncodeComponent {
                     <h2>{"Choose a file to encode as an image:"}</h2>
                 </div>
                 <div>
-                    <input type="file" onchange={on_change} multiple=false/>
+                    <label class="container" for="encrypt">
+                        {"Encrypt"}
+                        <input type="checkbox" id="encrypt" ref={self.encrypt_ref.clone()}/>
+                        <span class="checkmark"></span>
+                    </label>
                 </div>
                 <div>
-                { for self.files.iter().map(|(n,d)| Self::view_file(n,d))}
+                    <label class="custom-file-upload">
+                        {"Select file"}
+                        <input type="file" onchange={on_change} multiple=false/>
+                    </label>
+                </div>
+                <div>
+                { for self.files.iter().rev().map(|(n,d,k)| Self::view_file(n,d,k))}
                 </div>
             </div>
         }
@@ -65,7 +80,7 @@ impl Component for EncodeComponent {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Files(files) => {
+            Msg::Files(files, encrypt) => {
                 for file in files.into_iter() {
                     let file_name = file.name();
                     let task = {
@@ -76,6 +91,7 @@ impl Component for EncodeComponent {
                             link.send_message(Msg::LoadedBytes(
                                 file_name,
                                 res.expect("failed to read file"),
+                                encrypt,
                             ))
                         })
                     };
@@ -83,9 +99,15 @@ impl Component for EncodeComponent {
                 }
                 true
             }
-            Msg::LoadedBytes(file_name, data) => {
-                let image = Self::encode(data);
-                self.files.push((file_name.clone(), image));
+            Msg::LoadedBytes(file_name, data, encrypt) => {
+                let (image, key) = if encrypt {
+                    let cipher = Cipher::new();
+                    let data = cipher.encrypt(&data);
+                    (Self::encode(data), Some(cipher.get_key_struct()))
+                } else {
+                    (Self::encode(data), None)
+                };
+                self.files.push((file_name.clone(), image, key));
                 self.readers.remove(&file_name);
                 true
             }
@@ -94,26 +116,44 @@ impl Component for EncodeComponent {
 }
 
 impl EncodeComponent {
-    fn view_file(name: &str, data: &[u8]) -> Html {
+    fn view_file(name: &str, data: &[u8], key: &Option<Key>) -> Html {
         let image_data = general_purpose::STANDARD_NO_PAD.encode(data);
         let img = format!("data:image/png;base64,{}", image_data);
 
-        let file_name = name.to_owned() + ".png";
-        let blob = Blob::new_with_options(data, Some("image/png"));
-        let blob_url = ObjectUrl::from(blob);
-        let on_click = Callback::from(move |_| {
-            Self::download_file(&file_name, &blob_url);
-        });
+        let image_file_name = name.to_owned() + ".png";
+        let image_blob = Blob::new_with_options(data, Some("image/png"));
+        let image_blob_url = ObjectUrl::from(image_blob);
+
+        let (on_click, donwload_text) = if let Some(key) = key {
+            let key_file_name = name.to_owned() + ".key";
+            let key_json = serde_json::to_string(key).unwrap();
+            let key_data = general_purpose::STANDARD_NO_PAD.encode(key_json);
+            let key_blob = Blob::new(key_data.as_str());
+            let key_blob_url = ObjectUrl::from(key_blob);
+            let on_click = Callback::from(move |_| {
+                Self::download_file(&key_file_name, &key_blob_url);
+                Self::download_file(&image_file_name, &image_blob_url);
+            });
+            let download_text = format!("{}.png\n{}.key", name, name);
+            (on_click, download_text)
+        } else {
+            let on_click = Callback::from(move |_| {
+                Self::download_file(&image_file_name, &image_blob_url);
+            });
+            let download_text = format!("{}.png", name);
+            (on_click, download_text)
+        };
 
         html! {
             <div class="img">
-                <div class="center">
-                    <p>{name}</p>
-                </div>
-                <img src={img}/>
-                <div class="center">
-                    <button onclick={on_click}>{"Download"}</button>
-                </div>
+                <button onclick={on_click}>
+                    <div class="center">
+                        <p>{donwload_text}</p>
+                    </div>
+                    <div class="center">
+                        <img src={img}/>
+                    </div>
+                </button>
             </div>
         }
     }
