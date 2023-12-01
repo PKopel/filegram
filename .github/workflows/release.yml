@@ -86,7 +86,7 @@ jobs:
           echo "hash=$(sha256sum ${{ env.BINARY_PATH }} | base64 -w0)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Upload binary
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v3.1.3
         with:
           name: fig-amd64-${{ env.os_name }}${{ env.EXT }}
           path: ${{ env.BINARY_PATH }}
