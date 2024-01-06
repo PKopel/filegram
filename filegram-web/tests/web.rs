@@ -12,6 +12,6 @@ fn encode_decode_test() {
     getrandom::getrandom(&mut original_data).unwrap();
     let original_data = original_data.to_vec();
     let rgb = encode::from_slice(&original_data);
-    let data = decode::from_rgb(&rgb);
+    let data = decode::from_rgb(&rgb).unwrap();
     assert_eq!(original_data, data)
 }

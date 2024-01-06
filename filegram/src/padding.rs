@@ -1,6 +1,6 @@
 use block_padding::{
     generic_array::{typenum::U255, GenericArray},
-    AnsiX923, Padding,
+    AnsiX923, Padding, UnpadError,
 };
 
 use crate::BUFFER_SIZE;
@@ -13,10 +13,10 @@ pub fn pad_block(data: Vec<u8>) -> Vec<u8> {
     block.to_vec()
 }
 
-pub fn unpad_block(data: &Vec<u8>) -> Vec<u8> {
+pub fn unpad_block(data: &Vec<u8>) -> Result<Vec<u8>, UnpadError> {
     let mut block: GenericArray<u8, U255> = GenericArray::clone_from_slice(&[0u8; BUFFER_SIZE]);
     let data_len = data.len();
     block[..data_len].copy_from_slice(data);
-    let data = AnsiX923::unpad(&block).unwrap();
-    data.to_vec()
+    let data = AnsiX923::unpad(&block)?;
+    Ok(data.to_vec())
 }

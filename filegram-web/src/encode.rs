@@ -161,7 +161,7 @@ impl EncodeComponent {
     fn download_file(file_name: &str, url: &ObjectUrl) {
         let download_element = document().create_element("a").unwrap();
         download_element
-            .set_attribute("href", &url.to_string())
+            .set_attribute("href", url)
             .unwrap();
         download_element
             .set_attribute("download", file_name)

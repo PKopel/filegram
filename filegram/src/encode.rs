@@ -8,13 +8,9 @@ use crate::{padding::pad_block, utils::read_exact, BUFFER_SIZE, IMAGE_WIDTH};
 fn update_frame(image: &mut RgbImage, data: Vec<u8>, shift: usize) {
     data.chunks(3)
         .map(|chunk| {
-            if chunk.len() == 3 {
-                chunk.try_into().unwrap()
-            } else {
-                let mut triple = [0u8; 3];
-                triple[..chunk.len()].copy_from_slice(chunk);
-                triple
-            }
+            let mut triple = [0u8; 3];
+            triple[..chunk.len()].copy_from_slice(chunk);
+            triple
         })
         .map(Rgb)
         .enumerate()
