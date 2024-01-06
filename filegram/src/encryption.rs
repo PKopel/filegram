@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use block_padding::generic_array::GenericArray;
 use chacha20poly1305::{
     aead::{Aead, OsRng},
@@ -32,18 +34,18 @@ impl Cipher {
         Cipher { cipher, key, nonce }
     }
 
-    pub fn with_key(key: Vec<u8>) -> Self {
+    pub fn with_key(key: Vec<u8>) -> Result<Self, Box<dyn Error>> {
         let key = GenericArray::clone_from_slice(&key);
-        let cipher = ChaCha20Poly1305::new_from_slice(&key).unwrap();
+        let cipher = ChaCha20Poly1305::new_from_slice(&key)?;
         let nonce = ChaCha20Poly1305::generate_nonce(&mut OsRng);
-        Cipher { cipher, key, nonce }
+        Ok(Cipher { cipher, key, nonce })
     }
 
-    pub fn load(key_struct: &Key) -> Self {
+    pub fn load(key_struct: &Key) -> Result<Self, Box<dyn Error>> {
         let key = GenericArray::clone_from_slice(&key_struct.key);
-        let cipher = ChaCha20Poly1305::new_from_slice(&key_struct.key).unwrap();
+        let cipher = ChaCha20Poly1305::new_from_slice(&key_struct.key)?;
         let nonce = GenericArray::clone_from_slice(&key_struct.nonce);
-        Cipher { cipher, key, nonce }
+        Ok(Cipher { cipher, key, nonce })
     }
 
     pub fn get_key_struct(&self) -> Key {

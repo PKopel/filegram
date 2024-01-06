@@ -122,7 +122,7 @@ impl Component for DecodeComponent {
             Msg::LoadedBytes(file_name, data) => {
                 let data = Self::decode(data);
                 let file_contents = if let Some(key) = &self.key {
-                    let cipher = Cipher::load(key);
+                    let cipher = Cipher::load(key).unwrap();
                     cipher.decrypt(&data)
                 } else {
                     data
@@ -186,6 +186,6 @@ impl DecodeComponent {
 
     fn decode(data: Vec<u8>) -> Vec<u8> {
         let cursor = std::io::Cursor::new(data);
-        decode::from_file(cursor)
+        decode::from_file(cursor).unwrap()
     }
 }

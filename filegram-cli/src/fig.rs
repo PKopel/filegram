@@ -2,9 +2,11 @@ mod utils;
 
 use std::{
     fs::{self, File},
-    io::{self, BufReader, Error, ErrorKind},
+    io::{self, BufReader},
     path::Path,
 };
+
+use std::error::Error;
 
 use clap::{Args, Parser, Subcommand};
 use filegram::{
@@ -20,7 +22,7 @@ struct Cli {
 }
 
 impl Cli {
-    fn execute(self) -> Result<(), Error> {
+    fn execute(self) -> Result<(), Box<dyn Error>> {
         let command: Box<dyn CommandTrait> = match self.command {
             Command::Encode(encode) => Box::new(encode),
             Command::Decode(decode) => Box::new(decode),
@@ -36,7 +38,7 @@ enum Command {
 }
 
 trait CommandTrait {
-    fn execute(&self) -> Result<(), Error>;
+    fn execute(&self) -> Result<(), Box<dyn std::error::Error>>;
     fn default_output(&self) -> String;
 }
 
@@ -51,8 +53,12 @@ struct Encode {
 }
 
 impl CommandTrait for Encode {
-    fn execute(&self) -> Result<(), Error> {
-        let output = self.output.clone().unwrap_or_else(|| self.default_output());
+    fn execute(&self) -> Result<(), Box<dyn Error>> {
+        let output = if let Some(output) = self.output.clone() {
+            output
+        } else {
+            self.default_output()
+        };
         let data = if let Some(file) = self.file.clone() {
             utils::read_to_end(File::open(file.clone())?)
         } else {
@@ -67,8 +73,7 @@ impl CommandTrait for Encode {
             encode::from_slice(&data)
         };
         let path = Path::new(&output);
-        rgb.save(path)
-            .map_err(|err| Error::new(ErrorKind::Other, err))?;
+        rgb.save(path)?;
         Ok(())
     }
 
@@ -96,14 +101,18 @@ struct Decode {
 }
 
 impl CommandTrait for Decode {
-    fn execute(&self) -> Result<(), Error> {
-        let output = self.output.clone().unwrap_or_else(|| self.default_output());
+    fn execute(&self) -> Result<(), Box<dyn Error>> {
+        let output = if let Some(output) = self.output.clone() {
+            output
+        } else {
+            self.default_output()
+        };
         let file = File::open(self.file.clone())?;
-        let data = decode::from_file(BufReader::new(file));
+        let data = decode::from_file(BufReader::new(file))?;
         let data = if let Some(Some(path)) = &self.encrypted {
             let key_file = File::open(path)?;
             let key = load_cipher_key(key_file)?;
-            let cipher = Cipher::load(&key);
+            let cipher = Cipher::load(&key)?;
             cipher.decrypt(&data)
         } else {
             data
@@ -120,18 +129,18 @@ impl CommandTrait for Decode {
     }
 }
 
-fn save_cipher_key(key: Key) -> Result<(), Error> {
+fn save_cipher_key(key: Key) -> Result<(), std::io::Error> {
     let key_file = File::create("filegram.key")?;
     serde_json::to_writer(key_file, &key)?;
     Ok(())
 }
 
-fn load_cipher_key(file: File) -> Result<Key, Error> {
+fn load_cipher_key(file: File) -> Result<Key, std::io::Error> {
     let key: Key = serde_json::from_reader(file)?;
     Ok(key)
 }
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
 
     cli.execute()
