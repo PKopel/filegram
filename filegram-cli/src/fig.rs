@@ -38,7 +38,7 @@ enum Command {
 }
 
 trait CommandTrait {
-    fn execute(&self) -> Result<(), Box<dyn std::error::Error>>;
+    fn execute(&self) -> Result<(), Box<dyn Error>>;
     fn default_output(&self) -> String;
 }
 
