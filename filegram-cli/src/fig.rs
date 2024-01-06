@@ -54,11 +54,7 @@ struct Encode {
 
 impl CommandTrait for Encode {
     fn execute(&self) -> Result<(), Box<dyn Error>> {
-        let output = if let Some(output) = self.output.clone() {
-            output
-        } else {
-            self.default_output()
-        };
+        let output = self.output.clone().unwrap_or_else(|| self.default_output());
         let data = if let Some(file) = self.file.clone() {
             utils::read_to_end(File::open(file.clone())?)
         } else {
@@ -102,11 +98,7 @@ struct Decode {
 
 impl CommandTrait for Decode {
     fn execute(&self) -> Result<(), Box<dyn Error>> {
-        let output = if let Some(output) = self.output.clone() {
-            output
-        } else {
-            self.default_output()
-        };
+        let output = self.output.clone().unwrap_or_else(|| self.default_output());
         let file = File::open(self.file.clone())?;
         let data = decode::from_file(BufReader::new(file))?;
         let data = if let Some(Some(path)) = &self.encrypted {
