@@ -118,9 +118,6 @@
       in
       {
         checks = {
-          # Build the crate as part of `nix flake check` for convenience
-          inherit filegram-cli filegram-web;
-
           # Run clippy (and deny all warnings) on the crate source,
           # again, reusing the dependency artifacts from above.
           #
