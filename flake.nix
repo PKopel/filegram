@@ -6,7 +6,7 @@
 
     # The version of wasm-bindgen-cli needs to match the version in Cargo.lock
     # Update this to include the version you need
-    nixpkgs-for-wasm-bindgen.url = "github:NixOS/nixpkgs/4e6868b1aa3766ab1de169922bb3826143941973";
+    nixpkgs-for-wasm-bindgen.url = "github:NixOS/nixpkgs/807c549feabce7eddbf259dbdcec9e0600a0660d";
 
     crane = {
       url = "github:ipetkov/crane";
@@ -43,7 +43,11 @@
           # wasm32-unknown-unknown is required for trunk.
           targets = [ "wasm32-unknown-unknown" ];
         };
-        craneLib = crane.mkLib pkgs;
+        craneLib = ((crane.mkLib pkgs).overrideToolchain rustToolchain).overrideScope (_final: _prev: {
+          # The version of wasm-bindgen-cli needs to match the version in Cargo.lock. You
+          # can unpin this if your nixpkgs commit contains the appropriate wasm-bindgen-cli version
+          inherit (import nixpkgs-for-wasm-bindgen { inherit system; }) wasm-bindgen-cli;
+        });
 
         # When filtering sources, we want to allow assets other than .rs files
         src = lib.cleanSourceWith {
@@ -51,6 +55,7 @@
           filter = path: type:
             (lib.hasSuffix "\.html" path) ||
             (lib.hasSuffix "\.scss" path) ||
+            (lib.hasSuffix "\.css" path) ||
             # Example of a folder for images, icons, etc
             (lib.hasInfix "/assets/" path) ||
             # Default filter from crane (allow .rs files)
@@ -65,7 +70,7 @@
         commonArgs = {
           inherit src;
           pname = "filegram";
-          version = "0.1.0";
+          version = "0.2.0";
           strictDeps = true;
         };
 
@@ -106,6 +111,9 @@
           pname = "filegram-web";
           cargoArtifacts = cargoArtifactsWasm;
           trunkIndexPath = "filegram-web/index.html";
+          wasm-bindgen-cli = pkgs.wasm-bindgen-cli.override {
+            version = "0.2.91";
+          };
         });
       in
       {
@@ -126,6 +134,12 @@
 
           # Check formatting
           filegram-fmt = craneLib.cargoFmt commonArgs;
+        };
+
+        packages = rec {
+          cli = filegram-cli;
+          web = filegram-web;
+          default = cli;
         };
 
         apps.default = flake-utils.lib.mkApp {

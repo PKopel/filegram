@@ -1,10 +1,12 @@
 /target
 .ignore
 .vscode
-fig
+.direnv
+**/fig
 **/*.png
 !filegram-web/images/*.png
 **/*.blb
 **/*.key
 **/dist
+result
 Cargo.lock
