@@ -14,7 +14,7 @@ wasm-bindgen = { version = "0.2.91", default-features = false }
 yew = { version = "0.21.0", features = ["csr"] }
 gloo-file = "0.3.0"
 gloo-utils = { version = "0.2.0", default-features = false }
-base64 = "0.22.0"
+base64 = "0.22.1"
 serde_json = "1.0.115"
 
 [dev-dependencies]
