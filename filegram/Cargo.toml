@@ -11,7 +11,7 @@ block-padding = { version = "0.3.3", features = ["std"] }
 chacha20poly1305 = { version = "0.10.1", features = ["std"] }
 image = { version = "0.25.1", features = ["png"], default-features = false }
 imageproc = { version = "0.25.0", default-features = false }
-serde = { version = "1.0.199", features = [
+serde = { version = "1.0.203", features = [
     "std",
     "serde_derive",
 ], default-features = false }
