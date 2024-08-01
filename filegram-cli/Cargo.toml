@@ -9,7 +9,7 @@ edition = "2021"
 [dependencies]
 filegram = { path = "../filegram" }
 clap = { version = "4.5.8", features = ["derive"] }
-serde_json = "1.0.120"
+serde_json = "1.0.121"
 
 [[bin]]
 name = "fig"
