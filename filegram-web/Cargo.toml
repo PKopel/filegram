@@ -18,5 +18,5 @@ base64 = "0.22.1"
 serde_json = "1.0.132"
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.43"
+wasm-bindgen-test = "0.3.45"
 getrandom = { version = "0.2.15", features = ["js"] }
