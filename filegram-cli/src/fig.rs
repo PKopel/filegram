@@ -23,11 +23,10 @@ struct Cli {
 
 impl Cli {
     fn execute(self) -> Result<(), Box<dyn Error>> {
-        let command: Box<dyn CommandTrait> = match self.command {
-            Command::Encode(encode) => Box::new(encode),
-            Command::Decode(decode) => Box::new(decode),
-        };
-        command.execute()
+        match self.command {
+            Command::Encode(encode) => encode.execute(),
+            Command::Decode(decode) => decode.execute(),
+        }
     }
 }
 
@@ -38,7 +37,7 @@ enum Command {
 }
 
 trait CommandTrait {
-    fn execute(&self) -> Result<(), Box<dyn Error>>;
+    fn execute(self) -> Result<(), Box<dyn Error>>;
     fn default_output(&self) -> String;
 }
 
@@ -53,10 +52,10 @@ struct Encode {
 }
 
 impl CommandTrait for Encode {
-    fn execute(&self) -> Result<(), Box<dyn Error>> {
+    fn execute(self) -> Result<(), Box<dyn Error>> {
         let output = self.output.clone().unwrap_or_else(|| self.default_output());
-        let data = if let Some(file) = self.file.clone() {
-            utils::read_to_end(File::open(file.clone())?)
+        let data = if let Some(file) = self.file {
+            utils::read_to_end(File::open(file)?)
         } else {
             utils::read_to_end(io::stdin())
         }?;
@@ -87,21 +86,16 @@ struct Decode {
     file: String,
     #[arg(short, long)]
     output: Option<String>,
-    #[arg(
-        short,
-        long,
-        help = "path to key file",
-        default_missing_value = "filegram.key"
-    )]
-    encrypted: Option<Option<String>>,
+    #[arg(short, long, help = "path to key file")]
+    encrypted: Option<String>,
 }
 
 impl CommandTrait for Decode {
-    fn execute(&self) -> Result<(), Box<dyn Error>> {
+    fn execute(self) -> Result<(), Box<dyn Error>> {
         let output = self.output.clone().unwrap_or_else(|| self.default_output());
         let file = File::open(self.file.clone())?;
         let data = decode::from_file(BufReader::new(file))?;
-        let data = if let Some(Some(path)) = &self.encrypted {
+        let data = if let Some(path) = &self.encrypted {
             let key_file = File::open(path)?;
             let key = load_cipher_key(key_file)?;
             let cipher = Cipher::load(&key)?;
