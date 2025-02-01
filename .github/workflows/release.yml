@@ -129,7 +129,7 @@ jobs:
           name: fig-amd64-windows.exe
 
       - name: Upload assets
-        uses: softprops/action-gh-release@v2.2.0
+        uses: softprops/action-gh-release@v2.2.1
         with:
           files: |
             fig-amd64-linux
