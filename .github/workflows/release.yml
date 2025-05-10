@@ -9,6 +9,8 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: write
     outputs:
       hash-linux: ${{ steps.hash.outputs.hash }}
       hash-macos: ${{ steps.hash-mac.outputs.hash }}
