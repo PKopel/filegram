@@ -8,7 +8,7 @@ edition = "2021"
 filegram = { path = "../filegram" }
 
 js-sys = "0.3.74"
-image = { version = "0.25.6", default-features = false }
+image = { version = "0.25.8", default-features = false }
 web-sys = { version = "0.3.74", default-features = false }
 wasm-bindgen = { version = "0.2.97", default-features = false }
 yew = { version = "0.21.0", features = ["csr"] }
