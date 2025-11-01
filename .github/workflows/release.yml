@@ -118,17 +118,17 @@ jobs:
       contents: write
     steps:
       - name: Download linux binary
-        uses: actions/download-artifact@v5.0.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: fig-amd64-linux
 
       - name: Download macOS binary
-        uses: actions/download-artifact@v5.0.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: fig-amd64-darwin
 
       - name: Download windows binary
-        uses: actions/download-artifact@v5.0.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: fig-amd64-windows.exe
 
