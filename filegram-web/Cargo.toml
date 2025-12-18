@@ -11,7 +11,7 @@ js-sys = "0.3.74"
 image = { version = "0.25.9", default-features = false }
 web-sys = { version = "0.3.74", default-features = false }
 wasm-bindgen = { version = "0.2.97", default-features = false }
-yew = { version = "0.21.0", features = ["csr"] }
+yew = { version = "0.22.0", features = ["csr"] }
 gloo-file = "0.3.0"
 gloo-utils = { version = "0.2.0", default-features = false }
 base64 = "0.22.1"
